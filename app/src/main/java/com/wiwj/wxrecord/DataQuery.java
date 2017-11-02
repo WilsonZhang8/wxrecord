@@ -1,6 +1,7 @@
 package com.wiwj.wxrecord;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 
 import com.wiwj.wxrecord.domain.Contact;
@@ -12,12 +13,13 @@ import net.sqlcipher.database.SQLiteDatabaseHook;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by jh on 2017/10/29.
+ * Created by zghw on 2017/10/29.
  */
 
 public class DataQuery {
@@ -37,9 +39,14 @@ public class DataQuery {
         return db;
     }
 
+    /**
+     * 取得所有群信息存在的所有聊天记录
+     * @param db
+     * @return
+     */
     public static List<Qun> getResult(SQLiteDatabase db) {
-        Pattern compile = Pattern.compile("([^:]*):.*");
         List<Qun> qunList = getChatRooms(db);
+        Pattern compile = Pattern.compile("([^:]*):.*");
         for (Qun qun : qunList) {
             List<Message> qunMessage = getMessageByTalker(db, qun.getQunId());
             qun.setMessageList(qunMessage);
@@ -52,6 +59,7 @@ public class DataQuery {
                 if (matcher.find()) {
                     String userName = matcher.group(1);
                     Contact contact = getContactByUsernName(db, userName);
+                    //为了显示替换为人名
                     content = content.replaceFirst(userName + ":", contact.getNickName() + ":");
                     message.setContent(content);
                     message.setContact(contact);
@@ -140,6 +148,7 @@ public class DataQuery {
         return null;
     }
 
+
     /**
      * 查询某个聊天对象信息
      *
@@ -184,5 +193,93 @@ public class DataQuery {
         return null;
     }
 
+    /**
+     * 查询所有微信群最新数据
+     *
+     * @param db
+     * @return
+     */
+    public static List<Qun> getResultModify(SQLiteDatabase db) {
+        List<Qun> qunList = getChatRooms(db);
+        Pattern compile = Pattern.compile("([^:]*):.*");
+        Iterator<Qun> qunIterator = qunList.iterator();
+        while (qunIterator.hasNext()) {
+            Qun qun = qunIterator.next();
+            List<Message> qunMessage = getMessageByTalkerModify(db, qun.getQunId());
+            if (qunMessage == null || qunMessage.size() == 0) {
+                //使用Iterator安全删除List集合中的元素
+                qunIterator.remove();
+                continue;
+            }
+            qun.setMessageList(qunMessage);
+            /**
+             * 替换说话人信息
+             */
+            for (Message message : qunMessage) {
+                String content = message.getContent();
+                Matcher matcher = compile.matcher(content);
+                if (matcher.find()) {
+                    String userName = matcher.group(1);
+                    Contact contact = getContactByUsernName(db, userName);
+                    content = content.replaceFirst(userName + ":", contact.getNickName() + ":");
+                    message.setContent(content);
+                    message.setContact(contact);
+                }
+            }
+        }
 
+        return qunList;
+    }
+
+    /**
+     * 查询最新某个聊天信息
+     *
+     * @param db
+     * @param talker
+     * @return
+     */
+
+    public static List<Message> getMessageByTalkerModify(SQLiteDatabase db, String talker) {
+        LogUtil.i("查询聊天对象" + talker + "的最新聊天记录!");
+        SharedPreferences sharedPreferences = MyApplication.getSharedPreferences();
+        String key = talker + "lastMsgSeq";
+        String keyPre = talker + "lastMsgSeqPre";
+        String lastMsgSeq = sharedPreferences.getString(key, "0");
+        LogUtil.i("最后的消息序列" + key + "=" + lastMsgSeq);
+        //提交修改
+        Cursor cursor = null;
+        try {
+            //查询所有联系人（verifyFlag!=0:公众号等类型，群里面非好友的类型为4，未知类型2）
+            cursor = db.rawQuery("select msgId,content,createTime,msgSeq,talker from message where talker=? and msgSeq>? order by msgSeq desc", new String[]{talker, lastMsgSeq});
+            List<Message> messageList = new ArrayList<Message>();
+            while (cursor.moveToNext()) {
+
+                Message message = new Message();
+                String msgId = cursor.getString(cursor.getColumnIndex("msgId"));
+                message.setMsgId(msgId);
+                String content = cursor.getString(cursor.getColumnIndex("content"));
+                message.setContent(content);
+                String createTime = cursor.getString(cursor.getColumnIndex("createTime"));
+                message.setCreateTime(createTime);
+                String msgSeq = cursor.getString(cursor.getColumnIndex("msgSeq"));
+                message.setMsgSeq(msgSeq);
+                if (cursor.isFirst()) {
+                    //记录最后一个消息标志
+                    SharedPreferences.Editor editor = sharedPreferences.edit(); //获取编辑器
+                    editor.putString(keyPre, msgSeq);
+                    editor.commit();
+                }
+                message.setTalker(talker);
+                messageList.add(message);
+            }
+            return messageList;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
+    }
 }

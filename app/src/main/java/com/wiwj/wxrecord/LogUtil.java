@@ -3,7 +3,7 @@ package com.wiwj.wxrecord;
 import android.util.Log;
 
 /**
- * Created by Administrator on 2017/2/18 0018.
+ * Created by zghw on 2017/2/18 0018.
  */
 
 public class LogUtil {

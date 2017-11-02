@@ -14,6 +14,7 @@ public class Qun implements Serializable {
     private String qunOwner;
     private String qunListName;
     private String qunListId;
+    private String modifyTime;
     private List<Message> messageList;
 
     public String getQunName() {
@@ -70,6 +71,14 @@ public class Qun implements Serializable {
 
     public void setMessageList(List<Message> messageList) {
         this.messageList = messageList;
+    }
+
+    public String getModifyTime() {
+        return modifyTime;
+    }
+
+    public void setModifyTime(String modifyTime) {
+        this.modifyTime = modifyTime;
     }
 
     @Override
