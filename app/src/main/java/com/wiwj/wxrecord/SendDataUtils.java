@@ -1,7 +1,5 @@
 package com.wiwj.wxrecord;
 
-import android.util.Log;
-
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -36,13 +34,11 @@ public class SendDataUtils {
             public void onFailure(Call call, IOException e) {
 
             }
-
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String str = response.body().string();
-               // LogUtil.i("result = "+str);
+                // LogUtil.i("result = "+str);
             }
-
         });
     }
 

@@ -37,7 +37,7 @@ public class DataQuery {
         return db;
     }
 
-    public static Object getResult(SQLiteDatabase db) {
+    public static List<Qun> getResult(SQLiteDatabase db) {
         Pattern compile = Pattern.compile("([^:]*):.*");
         List<Qun> qunList = getChatRooms(db);
         for (Qun qun : qunList) {
@@ -89,7 +89,7 @@ public class DataQuery {
                 qun.setQunListId(qunListId);
                 qunList.add(qun);
             }
-
+            LogUtil.i("查询所有微信群信息!");
             return qunList;
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,6 +110,7 @@ public class DataQuery {
      */
 
     public static List<Message> getMessageByTalker(SQLiteDatabase db, String talker) {
+        LogUtil.i("查询聊天对象" + talker + "的聊天记录!");
         Cursor cursor = null;
         try {
             //查询所有联系人（verifyFlag!=0:公众号等类型，群里面非好友的类型为4，未知类型2）

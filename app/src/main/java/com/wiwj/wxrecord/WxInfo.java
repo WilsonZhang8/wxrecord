@@ -36,6 +36,7 @@ public class WxInfo {
     public static void getRoot() {
         execRootCmd("chmod -R 777 " + WxInfo.WX_ROOT_PATH);
         execRootCmd("chmod  777 " + WxInfo.WX_SP_UIN_PATH);
+        LogUtil.i("exec root cmd!");
     }
 
     /**
@@ -78,6 +79,7 @@ public class WxInfo {
             for (Element element : elements) {
                 if ("_auth_uin".equals(element.attributeValue("name"))) {
                     uin = element.attributeValue("value");
+                    LogUtil.i("获取到微信uid=" + uin);
                 }
             }
         } catch (Exception e) {
@@ -100,11 +102,13 @@ public class WxInfo {
             LogUtil.e("初始化数据库密码失败：imei或uid为空");
             return null;
         }
+        LogUtil.i("开始解密。。。。");
+        LogUtil.i("原始imei=" + imei);
+        LogUtil.i("原始uin=" + uin);
         String md5 = getMD5(imei + uin);
-        System.out.println(imei + uin + "初始数值");
-        System.out.println(md5 + "MD5");
+        LogUtil.i("MD5后=" + md5);
         String password = md5.substring(0, 7).toLowerCase();
-        System.out.println("加密后" + password);
+        LogUtil.i("截取后最终密码=" + password);
         return password;
     }
 
@@ -164,17 +168,18 @@ public class WxInfo {
      * @param file     目录
      * @param fileName 需要查找的文件名称
      */
-    private static void searchFile(File file, String fileName, List<File> mWxDbPathList) {
+    private static void searchFile(File file, String fileName, List<File> wxDbPathList) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File childFile : files) {
-                    searchFile(childFile, fileName, mWxDbPathList);
+                    searchFile(childFile, fileName, wxDbPathList);
                 }
             }
         } else {
             if (fileName.equals(file.getName())) {
-                mWxDbPathList.add(file);
+                //查询到相应的文件则添加到集合中
+                wxDbPathList.add(file);
             }
         }
     }
@@ -187,22 +192,18 @@ public class WxInfo {
 
     public static List<File> getWxDbFileList() {
         File wxDataDir = new File(WX_DB_DIR_PATH);
-        //  递归查询微信本地数据库文件
-        List<File> mWxDbPathList = new ArrayList<File>();
-        searchFile(wxDataDir, WX_DB_FILE_NAME, mWxDbPathList);
+        List<File> wxDbPathList = new ArrayList<File>();
+        searchFile(wxDataDir, WX_DB_FILE_NAME, wxDbPathList);
         List<File> copyWxDateDbList = new ArrayList<File>();
         //处理多账号登陆情况
-        for (int i = 0; i < mWxDbPathList.size(); i++) {
-            File file = mWxDbPathList.get(i);
+        for (int i = 0; i < wxDbPathList.size(); i++) {
+            File file = wxDbPathList.get(i);
             String copyFilePath = mCurrApkPath + COPY_WX_DATA_DB;
-            //将微信数据库拷贝出来，因为直接连接微信的db，会导致微信崩溃
+            //将微信数据库拷贝到本程序下，因为直接连接微信的db，会导致微信崩溃
             copyFile(file.getAbsolutePath(), copyFilePath);
             File copyWxDataDb = new File(copyFilePath);
             copyWxDateDbList.add(copyWxDataDb);
-            //openWxDb(copyWxDataDb);
         }
-
-
         return copyWxDateDbList;
     }
 
@@ -227,7 +228,7 @@ public class WxInfo {
                 inStream.close();
             }
         } catch (Exception e) {
-            System.out.println("复制单个文件操作出错");
+            LogUtil.e("copy file fail !!!");
             e.printStackTrace();
 
         }
