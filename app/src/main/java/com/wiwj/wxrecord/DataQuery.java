@@ -50,7 +50,7 @@ public class DataQuery {
     public static UserInfo getUserInfo(SQLiteDatabase db) {
         Cursor cursor = null;
         try {
-            cursor = db.rawQuery("select id,type,value from userInfo  where id=2 or id=3 or id=4", null);
+            cursor = db.rawQuery("select id,type,value from userInfo  where id=2 or id=4 or id=6", null);
             UserInfo userInfo = new UserInfo();
             while (cursor.moveToNext()) {
                 String id = cursor.getString(cursor.getColumnIndex("id"));
@@ -58,14 +58,15 @@ public class DataQuery {
                 if ("2".equals(id)) {
                     userInfo.setUserId(value);
                 }
-                if ("3".equals(id)) {
+                if ("4".equals(id)) {
                     userInfo.setNickName(value);
                 }
-                if ("4".equals(id)) {
+                if ("6".equals(id)) {
                     userInfo.setPhone(value);
                 }
             }
-            LogUtil.i("查询微信账号信息!");
+            LogUtil.i("查询微信账号信息!" + userInfo);
+            return userInfo;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
