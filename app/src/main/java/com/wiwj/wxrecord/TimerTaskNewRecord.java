@@ -5,11 +5,14 @@ import android.os.Message;
 
 import com.google.gson.Gson;
 import com.wiwj.wxrecord.domain.Qun;
+import com.wiwj.wxrecord.domain.UserInfo;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimerTask;
 
 /**
@@ -44,9 +47,13 @@ public class TimerTaskNewRecord extends TimerTask {
                 //链接数据库
                 db = DataQuery.getdb(file, password);
                 List<Qun> qunList = DataQuery.getResultModify(db);
+                UserInfo userInfo = DataQuery.getUserInfo(db);
                 Gson gson = new Gson();
                 for (Qun qun : qunList) {
-                    String res = gson.toJson(qun);
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("userInfo", userInfo);
+                    data.put("qun", qun);
+                    String res = gson.toJson(data);
                     LogUtil.d("发送的json数据为：" + res);
                     Message message = new Message();
                     message.obj = res;

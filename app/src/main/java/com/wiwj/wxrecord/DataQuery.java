@@ -7,6 +7,7 @@ import android.database.Cursor;
 import com.wiwj.wxrecord.domain.Contact;
 import com.wiwj.wxrecord.domain.Message;
 import com.wiwj.wxrecord.domain.Qun;
+import com.wiwj.wxrecord.domain.UserInfo;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteDatabaseHook;
@@ -39,8 +40,45 @@ public class DataQuery {
         return db;
     }
 
+
+    /**
+     * 取得用户信息
+     *
+     * @param db
+     * @return
+     */
+    public static UserInfo getUserInfo(SQLiteDatabase db) {
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("select id,type,value from userInfo  where id=2 or id=3 or id=4", null);
+            UserInfo userInfo = new UserInfo();
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(cursor.getColumnIndex("id"));
+                String value = cursor.getString(cursor.getColumnIndex("value"));
+                if ("2".equals(id)) {
+                    userInfo.setUserId(value);
+                }
+                if ("3".equals(id)) {
+                    userInfo.setNickName(value);
+                }
+                if ("4".equals(id)) {
+                    userInfo.setPhone(value);
+                }
+            }
+            LogUtil.i("查询微信账号信息!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
     /**
      * 取得所有群信息存在的所有聊天记录
+     *
      * @param db
      * @return
      */
@@ -282,4 +320,5 @@ public class DataQuery {
         }
         return null;
     }
+
 }

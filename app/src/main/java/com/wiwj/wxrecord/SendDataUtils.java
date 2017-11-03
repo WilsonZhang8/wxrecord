@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.wiwj.wxrecord.domain.Qun;
 
 import java.io.IOException;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -49,7 +50,8 @@ public class SendDataUtils {
                     try {
                         //试着转换为
                         Gson gson = new Gson();
-                        Qun qun = gson.fromJson(data, Qun.class);
+                        Map<String, Object> jsonMap = gson.fromJson(data, Map.class);
+                        Qun qun = (Qun) jsonMap.get("qun");
                         String talker = qun.getQunId();
                         SharedPreferences sharedPreferences = MyApplication.getSharedPreferences();
                         String key = talker + "lastMsgSeq";

