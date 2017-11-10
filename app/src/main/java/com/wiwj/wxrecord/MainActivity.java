@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                     String res = gson.toJson(data);
                     LogUtil.d("发送的json数据为：" + res);
                     //发送数据
-                    SendDataUtils.sendData(res);
+                    SendDataUtils.storeData(data);
                 }
                 // textView.setText("已发送!");
             } catch (Exception e) {
