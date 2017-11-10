@@ -35,7 +35,7 @@ public class SendDataUtils {
                 .add("data", data)
                 .build();
         Request request = new Request.Builder()
-                .url("http://www.laiduer.com/wx/recevieData")
+                .url("")
                 .post(body)
                 .build();
         Call call = client.newCall(request);
