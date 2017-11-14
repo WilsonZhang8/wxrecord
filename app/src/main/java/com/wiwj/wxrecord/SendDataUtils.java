@@ -32,7 +32,7 @@ public class SendDataUtils {
                 .add("data", data)
                 .build();
         Request request = new Request.Builder()
-                .url("http://10.1.70.25:8899/wx/recevieData")
+                .url("http://114.112.77.136:8899/wx/recevieData")
                 .post(body)
                 .build();
         Call call = client.newCall(request);
