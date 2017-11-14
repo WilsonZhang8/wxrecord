@@ -4,11 +4,8 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.wiwj.wxrecord.domain.Qun;
-import com.wiwj.wxrecord.oracle.JdbcUtil;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 import okhttp3.Call;
@@ -35,7 +32,7 @@ public class SendDataUtils {
                 .add("data", data)
                 .build();
         Request request = new Request.Builder()
-                .url("")
+                .url("http://10.1.70.25:8899/wx/recevieData")
                 .post(body)
                 .build();
         Call call = client.newCall(request);
@@ -77,28 +74,6 @@ public class SendDataUtils {
                 }
             }
         });
-    }
-
-    public static void storeData(Map<String, Object> data) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                JdbcUtil jdbcUtil = new JdbcUtil();
-
-                try {
-                    jdbcUtil.getConnection();
-                    List<Map<String, Object>> result = jdbcUtil.findResult(
-                            "select * from EX_A_UPDATE_RECORD", null);
-                    for (Map<String, Object> m : result) {
-                        System.out.println(m);
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } finally {
-                    jdbcUtil.releaseConn();
-                }
-            }
-        }).start();
     }
 
     public static void main(String args[]) {
